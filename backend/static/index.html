@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gujarat R&B - Asset Register & Citizen Grievance Portal</title>
+<link rel="stylesheet" href="/static/vendor/leaflet.css">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+
+<!-- OFFICER SIGN-IN -->
+<section id="login">
+  <div class="login-card">
+    <h1>Gujarat R&B Asset Register</h1>
+    <p>Sign in to inspect, track and prioritise government buildings and roads.</p>
+    <form id="login-form">
+      <label class="field"><span>Username</span><input id="u" autocomplete="username" required></label>
+      <label class="field"><span>Password</span><input id="p" type="password" autocomplete="current-password" required></label>
+      <button class="btn" type="submit" style="width:100%">Sign in</button>
+      <p class="err" id="login-err" role="alert"></p>
+    </form>
+    <div class="demo hidden" id="demo-box">Demo accounts (password <b>demo123</b>):<br>
+      <button data-u="je_surat">je_surat</button> junior engineer, one division ·
+      <button data-u="se_ahmedabad">se_ahmedabad</button> circle, read-only ·
+      <button data-u="ce_state">ce_state</button> state-wide Chief Engineer</div>
+    
+    <div class="citizen-cta">
+      <p>Are you a Gujarat citizen wanting to report road damage or a building defect?</p>
+      <button class="btn ghost" id="btn-goto-citizen" type="button" style="width:100%">🏛️ Open Citizen Grievance Portal</button>
+    </div>
+  </div>
+</section>
+
+<!-- CITIZEN GRIEVANCE PORTAL (PUBLIC) -->
+<section id="citizen-portal" class="hidden">
+  <div class="citizen-head">
+    <div>
+      <h1>🏛️ Gujarat Roads & Buildings Dept · Citizen Redressal Portal</h1>
+      <small>Official public reporting and grievance redressal system for Gujarat State assets</small>
+    </div>
+    <button class="btn ghost" id="btn-goto-login" type="button">Officer Sign In</button>
+  </div>
+  <div class="citizen-nav">
+    <button type="button" class="active" id="ctab-report" data-ctab="report">📝 Report Road / Building Defect</button>
+    <button type="button" id="ctab-track" data-ctab="track">🔍 Track Grievance Status</button>
+  </div>
+  <div class="citizen-body">
+    <!-- PANE: REPORT -->
+    <div id="c-pane-report" class="c-card">
+      <h2>Report an Asset Defect or Road Hazard</h2>
+      <p class="sub">Submit details of potholes, road damages, building structural defects, or hazards to Gujarat R&B engineers for prompt action.</p>
+      
+      <div class="type-toggle">
+        <button type="button" class="type-btn" id="cbtn-type-building">🏢 Building Defect</button>
+        <button type="button" class="type-btn active" id="cbtn-type-road">🛣️ Road Defect</button>
+      </div>
+
+      <form id="citizen-form">
+        <div class="two">
+          <label class="field"><span>District</span><select id="cg-district" required></select></label>
+          <label class="field"><span id="cg-asset-label">Road</span><select id="cg-asset" required></select></label>
+        </div>
+        <div class="two">
+          <label class="field"><span>Defect Category</span><select id="cg-category" required></select></label>
+          <label class="field"><span>Urgency Level</span><select id="cg-urgency">
+            <option value="Normal">Normal (Routine Maintenance)</option>
+            <option value="Urgent">Urgent (Requires Timely Attention)</option>
+            <option value="Emergency">🚨 Emergency Hazard (Immediate Public Safety Risk)</option>
+          </select></label>
+        </div>
+        <label class="field"><span>Specific Location / Landmark / Chainage</span>
+          <input id="cg-location" maxlength="200" placeholder="e.g. Near KM 14.2 culvert / opposite bus stand / Room 102 east wing">
+        </label>
+        <label class="field"><span>Defect Description</span>
+          <textarea id="cg-desc" rows="3" required maxlength="3000" placeholder="Describe the defect, extent of damage, waterlogging, or pothole severity..."></textarea>
+        </label>
+        <div class="two">
+          <label class="field"><span>Your Name</span><input id="cg-name" required maxlength="120" placeholder="Full name"></label>
+          <label class="field"><span>Mobile Phone Number</span><input id="cg-phone" required minlength="8" maxlength="20" placeholder="10-digit mobile number"></label>
+        </div>
+        <label class="field"><span>Email Address (Optional)</span><input id="cg-email" type="email" maxlength="120" placeholder="For status update notifications"></label>
+        
+        <label class="field"><span>Defect Photo (Optional, JPEG/PNG/WebP up to 5 MB)</span>
+          <input id="cg-photo" type="file" accept="image/jpeg,image/png,image/webp">
+        </label>
+        <div id="cg-photo-box" class="hidden"><img id="cg-photo-img" class="preview-img" alt="Photo preview"></div>
+
+        <div style="margin-top:16px">
+          <button class="btn" type="submit" id="cg-submit" style="width:100%;font-size:16px;padding:12px">Submit Grievance</button>
+        </div>
+        <p class="err" id="cg-err" role="alert"></p>
+      </form>
+      <div id="cg-success" class="hidden" style="margin-top:16px;padding:16px;background:#DEF7EC;border:1px solid #31C48D;border-radius:var(--radius)"></div>
+    </div>
+
+    <!-- PANE: TRACK -->
+    <div id="c-pane-track" class="c-card hidden">
+      <h2>Track Grievance Redressal Status</h2>
+      <p class="sub">Enter your Grievance Tracking ID (e.g. <code>GRV-GJ-SUR-ROD-0001</code>) <b>and</b> the mobile number you registered it with. Both are needed to protect your details.</p>
+      <div class="two" style="align-items:flex-end">
+        <label class="field" style="margin-bottom:0"><span>Grievance Tracking ID</span>
+          <input id="ct-query" placeholder="e.g. GRV-GJ-SUR-ROD-0001" autocomplete="off">
+        </label>
+        <label class="field" style="margin-bottom:0"><span>Registered Mobile Number</span>
+          <input id="ct-phone" type="tel" placeholder="e.g. 9876543210" autocomplete="off">
+        </label>
+      </div>
+      <p style="margin:12px 0 0"><button class="btn" type="button" id="ct-search-btn" style="padding:10px 20px">Check Status</button></p>
+      <p class="err" id="ct-err" role="alert"></p>
+      <div id="ct-results" style="margin-top:20px"></div>
+    </div>
+  </div>
+</section>
+
+<!-- OFFICER MAIN APPLICATION -->
+<div id="app" class="hidden">
+  <header>
+    <h1>Gujarat R&B Assets</h1>
+    <nav role="tablist" aria-label="Views">
+      <button role="tab" data-view="map" aria-selected="true">Map</button>
+      <button role="tab" data-view="dash" aria-selected="false">Dashboard</button>
+      <button role="tab" data-view="prio" aria-selected="false">Maintenance priorities</button>
+      <button role="tab" data-view="grv" aria-selected="false">Citizen Grievances <span class="badge hidden" id="grv-badge">0</span></button>
+      <button role="tab" data-view="audit" aria-selected="false">Audit log</button>
+    </nav>
+    <div class="spacer"></div>
+    <button class="btn ghost register-only hidden" id="add-building">Register building</button>
+    <button class="btn ghost register-only hidden" id="add-road">Register road</button>
+    <span class="who" id="who"></span>
+    <button class="btn ghost" id="logout">Sign out</button>
+  </header>
+  <main>
+    <!-- MAP VIEW -->
+    <div id="v-map" class="view">
+      <div class="map-wrap">
+        <div id="map"></div>
+        <div class="toolbar">
+          <select id="kind-filter" aria-label="Asset type">
+            <option value="all">Buildings and roads</option>
+            <option value="building">Buildings only</option>
+            <option value="road">Roads only</option>
+          </select>
+          <input id="search" type="search" placeholder="Search name or asset ID" aria-label="Search assets">
+          <select id="band-filter" aria-label="Filter by condition"><option value="">All conditions</option></select>
+          <label><input type="checkbox" id="overdue-only"> Overdue inspections only</label>
+        </div>
+        <div class="legend" id="legend"></div>
+        <div class="pickmsg hidden" id="pickmsg"><span id="pickmsg-text"></span>
+          <button class="btn hidden" id="pick-undo" type="button">Undo</button>
+          <button class="btn hidden" id="pick-done" type="button">Finish</button>
+          <button class="btn ghost" id="pick-cancel" type="button">Cancel</button></div>
+      </div>
+      <aside id="drawer" aria-live="polite"></aside>
+    </div>
+
+    <!-- DASHBOARD VIEW -->
+    <div id="v-dash" class="view hidden"><div class="page"><div class="page-inner">
+      <h2 id="dash-title">Condition overview</h2>
+      <div class="filters"><label>Show <select id="dash-kind"><option value="all">Buildings and roads</option><option value="building">Buildings</option><option value="road">Roads</option></select></label></div>
+      <div class="stats" id="stats"></div>
+      <div class="chart-box"><canvas id="chart"></canvas></div>
+    </div></div></div>
+
+    <!-- PRIORITIES VIEW -->
+    <div id="v-prio" class="view hidden"><div class="page"><div class="page-inner">
+      <h2>Maintenance priorities</h2>
+      <p style="color:var(--ink-soft);margin:-8px 0 10px;max-width:75ch">Ranked by how far each asset is from good condition, weighted by how critical it is (criticality High counts 1.5 times, Medium 1.25, Low 1). Assets in the Critical band are ranked as if their index were no better than 24.9, so a safety override is never outranked by a merely mediocre asset.</p>
+      <div class="filters"><label>Show <select id="prio-kind"><option value="all">Buildings and roads</option><option value="building">Buildings</option><option value="road">Roads</option></select></label></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>Asset</th><th>District</th><th>Condition</th><th class="num">Index</th><th class="num">Priority</th><th>Weakest components</th></tr></thead>
+        <tbody id="prio-body"></tbody>
+      </table></div>
+      <h3 class="subhead" id="unrated-title"></h3>
+      <div class="table-wrap"><table id="unrated-table" class="hidden">
+        <thead><tr><th>Asset</th><th>District</th><th>Criticality</th></tr></thead>
+        <tbody id="unrated-body"></tbody>
+      </table></div>
+    </div></div></div>
+
+    <!-- GRIEVANCE MANAGEMENT VIEW -->
+    <div id="v-grv" class="view hidden"><div class="page"><div class="page-inner">
+      <h2>Citizen Grievances & Redressal</h2>
+      <p style="color:var(--ink-soft);margin:-8px 0 16px">Review, investigate and act on citizen defect reports across Gujarat roads and buildings within your jurisdiction.</p>
+      <div class="stats" id="grv-stats"></div>
+      
+      <div class="filters">
+        <label>Asset Type: 
+          <select id="grv-kind-filter" autocomplete="off">
+            <option value="all">All (Roads & Buildings)</option>
+            <option value="road">🛣️ Roads only</option>
+            <option value="building">🏢 Buildings only</option>
+          </select>
+        </label>
+        <label>Status: 
+          <select id="grv-status-filter" autocomplete="off">
+            <option value="">All Statuses</option>
+            <option value="Pending">Pending</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Work Order Issued">Work Order Issued</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </label>
+        <label>Urgency: 
+          <select id="grv-urgency-filter" autocomplete="off">
+            <option value="">All Urgencies</option>
+            <option value="Emergency">🚨 Emergency Hazard</option>
+            <option value="Urgent">Urgent</option>
+            <option value="Normal">Normal</option>
+          </select>
+        </label>
+        <input id="grv-search" type="search" autocomplete="off" placeholder="Search ticket ID, asset, citizen, or district..." style="padding:6px 10px;border:1px solid #9FADA9;border-radius:var(--radius);width:260px">
+        <button type="button" class="btn ghost small hidden" id="grv-reset">Clear filters</button>
+      </div>
+      <p id="grv-count" style="color:var(--ink-soft);font-size:13px;margin:0 0 8px" aria-live="polite"></p>
+
+      <div class="table-wrap"><table>
+        <thead>
+          <tr>
+            <th>Ticket ID</th>
+            <th>Type</th>
+            <th>Asset & District</th>
+            <th>Defect & Location</th>
+            <th>Citizen</th>
+            <th>Urgency</th>
+            <th>Status</th>
+            <th>Reported</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="grv-body"></tbody>
+      </table></div>
+    </div></div></div>
+
+    <!-- AUDIT LOG VIEW -->
+    <div id="v-audit" class="view hidden"><div class="page"><div class="page-inner">
+      <h2>Audit log</h2>
+      <p style="color:var(--ink-soft);margin:-8px 0 14px">Latest 100 actions within your jurisdiction. Entries cannot be edited or deleted from the application.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>When (UTC)</th><th>User</th><th>Action</th><th>Asset</th><th>Detail</th></tr></thead>
+        <tbody id="audit-body"></tbody>
+      </table></div>
+    </div></div></div>
+  </main>
+</div>
+
+<div id="modal-root"></div>
+
+<script src="/static/vendor/leaflet.js"></script>
+<script src="/static/vendor/chart.umd.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

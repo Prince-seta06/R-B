@@ -1,0 +1,15 @@
+# Optional: run PostgreSQL instead of the default SQLite.
+#   export POSTGRES_PASSWORD='choose-a-strong-one'
+#   docker compose up -d
+#   export DATABASE_URL=postgresql+psycopg2://rnb:$POSTGRES_PASSWORD@127.0.0.1:5432/rnb
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: rnb
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD first}
+      POSTGRES_DB: rnb
+    ports: ["127.0.0.1:5432:5432"]   # local only; not exposed on the network
+    volumes: ["rnb_pgdata:/var/lib/postgresql/data"]
+volumes:
+  rnb_pgdata:
